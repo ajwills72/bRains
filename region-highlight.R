@@ -13,16 +13,14 @@ library(neurobase)  # Base package for 'neuroconductor' - helper functions for '
 ## http://www.gin.cnrs.fr/en/tools/aal/
 if (!requireNamespace("aal")) {
   devtools::install_github("muschellij2/aal") 
-} else {
-  library(aal)
-}
+} 
+library(aal)
 
 ## Provide MNI template
 if (!requireNamespace("MNITemplate")) {
   devtools::install_github("jfortin1/MNITemplate")
-} else {
-  library(MNITemplate)
 }
+library(MNITemplate)
 
 ## Generate image
 img = aal_image()               # Load NIFTI image
@@ -35,10 +33,10 @@ labs = aal_get_labels()
 
 ## Pick the region of the brain you would like to highlight
 ## in this case the hippocamus, bilaterally
-hippocampus = labs$index[grep("Hippocampus", labs$name)]
+sma = labs$index[grep("Supp_Motor_Area", labs$name)]
 
 ## Create a mask for those regions
-mask = remake_img(vec = img %in% hippocampus, img = img)
+mask = remake_img(vec = img %in% sma, img = img)
 
 ### this would be the ``activation'' or surface you want to render 
 contour3d(template, x=1:dtemp[1], y=1:dtemp[2], z=1:dtemp[3], level = cut, alpha = 0.1, draw = TRUE)
@@ -46,4 +44,14 @@ contour3d(mask, level = c(0.5), alpha = c(0.5), add = TRUE, color=c("red") )
 ### add text
 text3d(x=dtemp[1]/2, y=dtemp[2]/2, z = dtemp[3]*0.98, text="Top")
 text3d(x=-0.98, y=dtemp[2]/2, z = dtemp[3]/2, text="Right")
-rglwidget()
+
+## rglwidget()
+## On Linux, I found rglwidget either very slow or wouldn't run at all
+## WebGL is a better option if you want to manipulate the image orientiation in real time.
+browseURL(
+  paste("file://", writeWebGL(dir=file.path(tempdir(), "webGL"), 
+                              width=500), sep="")
+)
+
+
+
